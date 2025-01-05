@@ -27,15 +27,6 @@ try {
   process.exit(1);
 }
 
-const Ad = model(
-  "Ad",
-  new Schema({
-    title: String,
-    description: String,
-    status: { type: String, enum: ["under review", "approved", "rejected"] },
-  })
-);
-
 // Register AdminJS adapter for Mongoose
 AdminJS.registerAdapter({
   Resource: AdminJSMongoose.Resource,
@@ -45,7 +36,6 @@ AdminJS.registerAdapter({
 // Setup AdminJS
 const adminJs = new AdminJS({
   resources: [
-    { resource: Ad },
     { resource: Listing },
     { resource: Location },
     { resource: User },
