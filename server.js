@@ -9,6 +9,10 @@ import session from "express-session";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
+import Listing from "./models/Listing.js";
+import Location from "./models/Location.js";
+import User from "./models/User.js";
+
 dotenv.config();
 
 // Connect to MongoDB
@@ -20,10 +24,9 @@ try {
   console.log("Connected to MongoDB");
 } catch (error) {
   console.error("Error connecting to MongoDB:", error);
-  process.exit(1); // Exit the process with an error code
+  process.exit(1);
 }
 
-// Define your database models (example: ads for classifieds)
 const Ad = model(
   "Ad",
   new Schema({
@@ -41,10 +44,17 @@ AdminJS.registerAdapter({
 
 // Setup AdminJS
 const adminJs = new AdminJS({
-  resources: [{ resource: Ad }],
+  resources: [
+    { resource: Ad },
+    { resource: Listing },
+    { resource: Location },
+    { resource: User },
+  ],
   rootPath: "/admin",
 });
 console.log("AdminJS initialized");
+
+const allowedEmails = process.env.ALLOWED_EMAILS.split(',');
 
 // Passport setup for Google authentication
 passport.use(
@@ -55,7 +65,6 @@ passport.use(
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
     (accessToken, refreshToken, profile, done) => {
-      const allowedEmails = ["ivan.gillig@gmail.com"]; // Define allowed emails
       if (allowedEmails.includes(profile.emails[0].value)) {
         return done(null, profile);
       } else {
@@ -129,7 +138,7 @@ app.use(adminJs.options.rootPath, (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/auth/google"); // Redirige a Google OAuth si no está autenticado
+  res.redirect("/auth/google");
 });
 
 // Mount AdminJS at rootPath
